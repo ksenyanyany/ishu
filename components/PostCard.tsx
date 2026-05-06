@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
@@ -67,12 +68,15 @@ export default function PostCard({ post }: { post: Post }) {
           )}
         </div>
 
-        <div className="flex flex-col flex-1 min-w-0">
+        <Link
+          href={isMyPost ? '/profile' : `/profile/${post.author.id}`}
+          className="flex flex-col flex-1 min-w-0"
+        >
           <span className="text-sm font-semibold text-[#1F2A44] leading-tight">
             {post.author.name}
           </span>
           <span className="text-xs text-[#9AA3B8]">{timeAgo}</span>
-        </div>
+        </Link>
 
         {/* Три точки */}
         <button className="p-1 relative" onClick={() => setMenuOpen(!menuOpen)}>
@@ -83,31 +87,20 @@ export default function PostCard({ post }: { post: Post }) {
       {/* Меню три точки */}
       {menuOpen && (
         <>
-          {/* фон чтобы закрыть меню при клике мимо */}
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setMenuOpen(false)}
-          />
-
+          <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
           <div className="absolute top-12 right-4 z-20 bg-white rounded-2xl shadow-lg overflow-hidden min-w-[180px]">
             {isMyPost ? (
               <>
                 <button
                   className="w-full text-left px-4 py-3 text-sm text-[#1F2A44] hover:bg-[#F3F6FC]"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    // потом: открыть редактирование
-                  }}
+                  onClick={() => setMenuOpen(false)}
                 >
                   Редактировать
                 </button>
                 <div className="h-px bg-[#EDEFF3]" />
                 <button
                   className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-[#F3F6FC]"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    // потом: запрос на удаление
-                  }}
+                  onClick={() => setMenuOpen(false)}
                 >
                   Удалить пост
                 </button>
@@ -116,20 +109,14 @@ export default function PostCard({ post }: { post: Post }) {
               <>
                 <button
                   className="w-full text-left px-4 py-3 text-sm text-[#1F2A44] hover:bg-[#F3F6FC]"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    // потом: скрыть пост
-                  }}
+                  onClick={() => setMenuOpen(false)}
                 >
                   Скрыть пост
                 </button>
                 <div className="h-px bg-[#EDEFF3]" />
                 <button
                   className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-[#F3F6FC]"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    // потом: пожаловаться
-                  }}
+                  onClick={() => setMenuOpen(false)}
                 >
                   Пожаловаться
                 </button>
@@ -177,15 +164,15 @@ export default function PostCard({ post }: { post: Post }) {
           {post.text}
         </p>
       </div>
-      
+
       {/* Действия */}
       <div className="flex items-center gap-4 px-4 pb-4 pt-1">
         <button onClick={handleLike} className="flex items-center gap-1.5">
           <Image
             src={liked ? '/icons/like.svg' : '/icons/notlike.svg'}
             alt="лайк"
-            width={18}
-            height={18}
+            width={22}
+            height={22}
             style={{ width: 'auto' }}
           />
           <span className={`text-sm ${liked ? 'text-[#B06B8A]' : 'text-[#9AA3B8]'}`}>
@@ -193,13 +180,13 @@ export default function PostCard({ post }: { post: Post }) {
           </span>
         </button>
 
-        <button className="flex items-center gap-1.5">
-          <Image src="/icons/comment.svg" alt="комментарии" width={18} height={18} style={{ width: 'auto' }} />
+        <Link href={`/post/${post.id}`} className="flex items-center gap-1.5">
+          <Image src="/icons/comment.svg" alt="комментарии" width={22} height={22} style={{ width: 'auto' }} />
           <span className="text-sm text-[#9AA3B8]">{post.commentsCount}</span>
-        </button>
+        </Link>
 
         <button className="ml-auto">
-          <Image src="/icons/share.svg" alt="поделиться" width={18} height={18} style={{ width: 'auto' }} />
+          <Image src="/icons/share.svg" alt="поделиться" width={22} height={22} style={{ width: 'auto' }} />
         </button>
       </div>
 

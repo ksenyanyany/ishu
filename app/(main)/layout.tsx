@@ -1,6 +1,7 @@
 // app/(main)/layout.tsx
 
 import BottomNav from "@/components/BottomNav";
+import DraggableFAB from "@/components/DraggableFAB";
 
 export default function MainLayout({
   children,
@@ -17,10 +18,11 @@ export default function MainLayout({
         backgroundSize: "100%",
       }}
     >
-      <div className="w-full max-w-sm mx-auto px-4 pb-28">
+      <div className="w-full max-w-sm mx-auto px-4 pb-32">
         {children}
       </div>
       <BottomNav />
+      <DraggableFAB />
     </div>
   );
 }

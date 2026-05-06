@@ -7,11 +7,11 @@ export default function Home() {
       {/* верхняя карточка */}
       <div className="w-full bg-[#EDEFF3] rounded-2xl shadow-md p-6 text-center">
 
-        <h1 className="text-5xl font-[var(--font-astroneer)] text-[#1F2A44]">
+        <h1 className="text-5xl font-(--font-astroneer) text-[#1F2A44]">
           ishu.
         </h1>
 
-        <p className="mt-1 text-s font-[var(--font-inter)] text-[#4B5563]">
+        <p className="mt-1 text-s font-(--font-inter) text-[#4B5563]">
           место, где важны эмоции
         </p>
       </div>
