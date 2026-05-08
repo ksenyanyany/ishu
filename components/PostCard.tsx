@@ -24,21 +24,21 @@ export type Post = {
   isLiked?: boolean;
 };
 
-// пока захардкожен, потом придёт с бэка
-const currentUserId = 'user_1';
-
 export default function PostCard({ post }: { post: Post }) {
   const [liked, setLiked] = useState(post.isLiked ?? false);
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const currentUserId = typeof window !== 'undefined' ? localStorage.getItem('user_id') ?? '' : '';
   const isMyPost = post.authorId === currentUserId;
 
   async function handleLike() {
     setLiked(!liked);
     setLikesCount(liked ? likesCount - 1 : likesCount + 1);
-    await fetch(`/api/posts/${post.id}/like`, {
-      method: liked ? 'DELETE' : 'POST',
+    const token = localStorage.getItem('token');
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post.id}/like/`, {
+      method: 'POST',
+      headers: { Authorization: `Token ${token}` },
     });
   }
 

@@ -29,18 +29,25 @@ export default function CreatePage() {
 
   function handleImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) {
-      setImages((prev) => [...prev, URL.createObjectURL(file)]);
-    }
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setImages((prev) => [...prev, ev.target?.result as string]);
+    reader.readAsDataURL(file);
   }
 
   function removeImage(index: number) {
     setImages((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function handlePublish() {
-    // потом: запрос на бэк
-    router.push('/feed');
+  async function handlePublish() {
+    if (!text.trim()) return;
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Token ${token}` },
+      body: JSON.stringify({ text: text.trim(), moods: selectedMoods, image: images[0] ?? '' }),
+    });
+    if (res.ok) router.push('/feed');
   }
 
   return (

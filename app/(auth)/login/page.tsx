@@ -26,7 +26,7 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState('');
   const [passError, setPassError]   = useState('');
 
-  function handleSubmit() {
+  async function handleSubmit() {
     setEmailError('');
     setPassError('');
     setError('');
@@ -34,12 +34,26 @@ export default function LoginPage() {
     if (!email.trim())    { setError('Введите email'); return; }
     if (!password.trim()) { setError('Введите пароль'); return; }
 
-    // TODO: заменить на запрос к бэку
-    // const res = await fetch('/api/auth/login', { ... })
-    // if (res.status === 404) { setEmailError('Пользователь с таким email не найден'); return; }
-    // if (res.status === 401) { setPassError('Неправильный пароль'); return; }
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    router.push('/feed');
+      const data = await res.json();
+
+      if (res.status === 404) { setEmailError('Пользователь с таким email не найден'); return; }
+      if (res.status === 401) { setPassError('Неправильный пароль'); return; }
+      if (!res.ok) { setError(data.error ?? 'Ошибка входа'); return; }
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('username', data.username);
+      localStorage.setItem('user_id', String(data.user_id));
+      router.push('/feed');
+    } catch {
+      setError('Не удалось подключиться к серверу');
+    }
   }
 
   return (

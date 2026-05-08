@@ -1,11 +1,15 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-// пока захардкожен, потом придёт с бэка
-const currentUser = { initials: 'АМ', avatarUrl: null as string | null };
-const BADGE_COUNT = 3;
+const API = process.env.NEXT_PUBLIC_API_URL;
+
+function authHeaders() {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+  return { Authorization: `Token ${token}` };
+}
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
@@ -37,6 +41,46 @@ function ActivityIcon({ active }: { active: boolean }) {
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const [badgeCount, setBadgeCount] = useState(0);
+  const [avatar, setAvatar] = useState('');
+  const [userInitials, setUserInitials] = useState('');
+
+  useEffect(() => {
+    // Инициалы из localStorage
+    const name = localStorage.getItem('username') || '';
+    setUserInitials(name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2) || '?');
+
+    async function loadBadge() {
+      try {
+        const [notifsRes, chatsRes, profileRes] = await Promise.all([
+          fetch(`${API}/api/notifications/`, { headers: authHeaders() }),
+          fetch(`${API}/api/chats/`, { headers: authHeaders() }),
+          fetch(`${API}/api/profile/`, { headers: authHeaders() }),
+        ]);
+
+        let total = 0;
+        if (notifsRes.ok) {
+          const notifs = await notifsRes.json();
+          total += notifs.filter((n: { is_read: boolean }) => !n.is_read).length;
+        }
+        if (chatsRes.ok) {
+          const chats = await chatsRes.json();
+          total += chats.reduce((s: number, c: { unread_count: number }) => s + (c.unread_count > 0 ? 1 : 0), 0);
+        }
+        if (profileRes.ok) {
+          const p = await profileRes.json();
+          if (p.avatar) setAvatar(p.avatar);
+          if (p.name) setUserInitials(p.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2) || '?');
+        }
+        setBadgeCount(total);
+      } catch {
+        // игнорируем
+      }
+    }
+
+    loadBadge();
+  }, [pathname]); // обновляем при смене страницы
+
   if (pathname.startsWith('/activity/chat/')) return null;
 
   const isActive = (path: string) => pathname === path;
@@ -76,9 +120,9 @@ export default function BottomNav() {
         >
           <div className="relative">
             <ActivityIcon active={isActive('/activity')} />
-            {BADGE_COUNT > 0 && (
+            {badgeCount > 0 && (
               <div className="absolute -top-1 -right-2 w-4 h-4 rounded-full bg-[#B06B8A] flex items-center justify-center border-2 border-[#EBF0F8]">
-                <span className="text-white text-[8px] font-bold leading-none">{BADGE_COUNT}</span>
+                <span className="text-white text-[8px] font-bold leading-none">{badgeCount}</span>
               </div>
             )}
           </div>
@@ -95,15 +139,20 @@ export default function BottomNav() {
           }`}
         >
           <div
-            className="w-[22px] h-[22px] rounded-full flex items-center justify-center"
+            className="w-[22px] h-[22px] rounded-full flex items-center justify-center overflow-hidden"
             style={{
-              background: isActive('/profile') ? 'linear-gradient(135deg, #7D90B8, #5A6E96)' : '#C5CEDC',
+              background: avatar ? 'transparent' : (isActive('/profile') ? 'linear-gradient(135deg, #7D90B8, #5A6E96)' : '#C5CEDC'),
               boxShadow: isActive('/profile') ? '0 0 0 2px #6B7FA8' : 'none',
             }}
           >
-            <span className="text-[9px] font-bold" style={{ color: isActive('/profile') ? 'white' : '#4B5563' }}>
-              {currentUser.initials}
-            </span>
+            {avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatar} alt="аватар" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[9px] font-bold" style={{ color: isActive('/profile') ? 'white' : '#4B5563' }}>
+                {userInitials}
+              </span>
+            )}
           </div>
           <span className={`text-[10px] font-semibold ${isActive('/profile') ? 'text-[#6B7FA8]' : 'text-[#9AA3B8]'}`}>
             Профиль

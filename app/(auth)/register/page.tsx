@@ -27,14 +27,32 @@ export default function RegisterPage() {
   const [showConf, setShowConf]   = useState(false);
   const [error, setError]         = useState('');
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!name.trim())            { setError('Введите ваше имя'); return; }
     if (!email.trim())           { setError('Введите email'); return; }
     if (!email.includes('@'))    { setError('Некорректный email'); return; }
     if (password.length < 6)     { setError('Пароль должен быть не менее 6 символов'); return; }
     if (password !== confirm)    { setError('Пароли не совпадают'); return; }
     setError('');
-    router.push('/feed');
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/register/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: name, email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) { setError(data.error ?? 'Ошибка регистрации'); return; }
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('username', data.username);
+      localStorage.setItem('user_id', String(data.user_id));
+      router.push('/feed');
+    } catch {
+      setError('Не удалось подключиться к серверу');
+    }
   }
 
   return (
